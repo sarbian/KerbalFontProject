@@ -31,7 +31,7 @@ using UnityEngine;
 
 namespace KerbalFontProject
 {
-    [KSPAddon(KSPAddon.Startup.Instantly, false)]
+    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
     public class KerbalFontProject : MonoBehaviour
     {
 
@@ -39,6 +39,9 @@ namespace KerbalFontProject
 
         IEnumerator Start()
         {
+            // We do this in MainMenu because something is going on in that scene that kills anything loaded with a bundle
+            // So each time we go back to the main menu we make sure the bundle is loaded again and the fallback added again...
+
             gameDataPath = KSPUtil.ApplicationRootPath + "/GameData";
             string notoFontPath = gameDataPath + "/KerbalFontProject/notoshiftjis.font";
             string fontName = "NotoSansCJKjp-Regular-SHIFTJIS SDF";
@@ -58,6 +61,7 @@ namespace KerbalFontProject
             yield return assetLoadRequest;
 
             TMP_FontAsset notoFont = assetLoadRequest.asset as TMP_FontAsset;
+            DontDestroyOnLoad(notoFont);
 
             fontAssetBundle.Unload(false);
 
@@ -70,7 +74,7 @@ namespace KerbalFontProject
             {
                 print("   " + FontInfo(fallback));
 
-                if (fallback.name == "NotoSansCJKjp-Regular SDF")
+                if (fallback.name == "NotoSansCJKjp-Regular SDF" || fallback.name == fontName)
                 {
                     stockFont.fallbackFontAssets.Remove(fallback);
                     Destroy(fallback);
@@ -159,13 +163,8 @@ namespace KerbalFontProject
 
             print(missing + " missing char");
         }
-
-        //void Update()
-        //{
-        //    ScreenMessages.PostScreenMessage("質 株 齢", 0);
-        //}
-
-        private string FontInfo(TMP_FontAsset f)
+        
+        public static string FontInfo(TMP_FontAsset f)
         {
             return "Font Asset Name:\"" + f.name + "\" - Font Type:" + f.fontAssetType + " - Font Name:\"" + f.fontInfo.Name 
                 + "\" - Resolution:" + f.atlas.width + "x" + f.atlas.height + " - Characters:" + f.characterDictionary.Count;
@@ -176,4 +175,18 @@ namespace KerbalFontProject
             MonoBehaviour.print("[KerbalFontProject] " + message);
         }
     }
+
+    //[KSPAddon(KSPAddon.Startup.Instantly, false)]
+    //public class KerbalFontProjectTest : MonoBehaviour
+    //{
+    //    void Start()
+    //    {
+    //        DontDestroyOnLoad(this);
+    //    }
+    //
+    //    void Update()
+    //    {
+    //        ScreenMessages.PostScreenMessage("質 株 齢", 0);
+    //    }
+    //}
 }
